@@ -1,0 +1,23 @@
+# 依赖与构建产物
+__pycache__/
+*.pyc
+.venv/
+.venv_check/
+_deps/
+_verify_deps/
+node_modules/
+dist/
+
+# 环境变量与密钥
+.env
+backend/.env
+*.local
+
+# 运行时数据
+media/
+*.log
+pip*.log
+
+# 编辑器
+.idea/
+.vscode/

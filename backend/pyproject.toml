@@ -1,0 +1,26 @@
+[project]
+name = "flyrain-kb-backend"
+version = "0.1.0"
+dependencies = [
+  "Django>=5.2,<5.3",
+  "djangorestframework>=3.15",
+  "djangorestframework-simplejwt",
+  "psycopg2-binary>=2.9",
+  "pgvector>=0.3",
+  "redis>=5.0",
+  "celery>=5.4",
+  "python-dotenv",
+  "langchain>=0.3",
+  "openai>=1.50",
+  "gunicorn>=22.0",
+  "pypdf",
+  "python-docx",
+  "openpyxl",
+  "beautifulsoup4",
+  "markdown",
+  "requests"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

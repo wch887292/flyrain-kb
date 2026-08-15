@@ -1,0 +1,31 @@
+# 兜底排除（package.json 的 files 白名单为主）
+# 构建产物
+**/__pycache__/
+*.pyc
+*.pyo
+.venv/
+.venv_check/
+node_modules/
+dist/
+build/
+
+# 验证缓存与日志
+_deps/
+_verify_deps/
+_*.log
+*.log
+
+# 密钥（只发布 .env.example，绝不发布真实 .env）
+.env
+.env.local
+backend/.env
+*.pem
+*.key
+
+# 媒体上传目录
+media/
+
+# IDE / 系统
+.idea/
+.vscode/
+.DS_Store
