@@ -1,0 +1,46 @@
+name: Publish
+
+# 推送 tag（v*）时自动发布：先发 npm，再建 GitHub Release
+on:
+  push:
+    tags:
+      - 'v*'
+
+# 建 Release 需要写 contents 权限
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      # 防止 tag 与 package.json 版本不一致导致重复/错误发布
+      - name: Verify tag matches package version
+        run: |
+          PKG_VER="$(node -p "require('./package.json').version")"
+          TAG="${GITHUB_REF_NAME#v}"
+          echo "package.json version: $PKG_VER"
+          echo "tag version:          $TAG"
+          if [ "$PKG_VER" != "$TAG" ]; then
+            echo "::error::package.json 版本 ($PKG_VER) 与 tag ($TAG) 不一致，请先 bump 版本再打 tag"
+            exit 1
+          fi
+
+      - name: Publish to npm
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Create GitHub Release
+        run: gh release create "${GITHUB_REF_NAME}" --generate-notes --title "flyrain-kb ${GITHUB_REF_NAME}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
