@@ -47,8 +47,18 @@ export interface Application {
   system_prompt: string
   temperature: number
   max_tokens: number
+  vector_weight: number
   is_active: boolean
   create_time: string
+}
+
+export interface SessionSummary {
+  session_id: string
+  app_id: number | null
+  app_name: string
+  msg_count: number
+  last_content: string
+  last_time: string
 }
 
 export interface ModelProvider {
@@ -80,4 +90,20 @@ export interface SearchResult {
   score: number
   doc_name: string
   page_no: number
+}
+
+export interface AuditLog {
+  id: number
+  user: number | null
+  username: string
+  action: string
+  action_display: string
+  resource_type: string
+  resource_id: number | null
+  detail: string
+  ip: string
+  path: string
+  method: string
+  status_code: number | null
+  create_time: string
 }

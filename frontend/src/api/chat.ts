@@ -1,5 +1,5 @@
 import request from './request'
-import type { Application, ModelProvider } from '@/types'
+import type { Application, ModelProvider, SessionSummary } from '@/types'
 
 export function listApps() {
   return request.get<Application[]>('/application/apps/')
@@ -28,6 +28,43 @@ export function testProvider(payload: {
   model_name: string
 }) {
   return request.post('/model/providers/test/', payload)
+}
+
+/** 会话列表 */
+export function listSessions(appId?: number) {
+  const params = appId ? { app_id: appId } : {}
+  return request.get<SessionSummary[]>('/chat/sessions/', { params })
+}
+
+/** 删除会话 */
+export function deleteSession(sessionId: string) {
+  return request.delete('/chat/sessions/delete/', { data: { session_id: sessionId } })
+}
+
+/** 会话历史消息 */
+export function listHistory(sessionId: string) {
+  return request.get<{ id: number; role: string; content: string; feedback?: string | null; create_time: string }[]>(
+    '/chat/history/',
+    { params: { session_id: sessionId } }
+  )
+}
+
+/** 提交消息反馈（点赞/点踩） */
+export function submitFeedback(messageId: number, feedback: 'like' | 'dislike') {
+  return request.post('/chat/feedback/', { message_id: messageId, feedback })
+}
+
+/** 对话命中率分析统计 */
+export function getChatStats(params: { days?: number; app_id?: number } = {}) {
+  return request.get('/chat/stats/', { params })
+}
+
+/** 导出会话为 Markdown */
+export function exportSession(sessionId: string) {
+  return request.get('/chat/export/', {
+    params: { session_id: sessionId },
+    responseType: 'blob',
+  })
 }
 
 /**

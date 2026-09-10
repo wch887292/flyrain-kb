@@ -1,4 +1,4 @@
-"""创建首个管理员账户（RBAC 种子数据）。
+﻿"""创建首个管理员账户（RBAC 种子数据）。
 
 用法：
     python manage.py seed_admin --username admin --password admin123
@@ -16,7 +16,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument('--username', default='admin')
         parser.add_argument('--password', default='admin123')
-        parser.add_argument('--email', default='admin@flyrain.local')
+        parser.add_argument('--email', default='admin@FHZSK.local')
         parser.add_argument('--tenant', default='默认租户')
 
     def handle(self, *args, **options):

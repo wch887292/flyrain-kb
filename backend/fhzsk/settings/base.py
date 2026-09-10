@@ -1,4 +1,4 @@
-import os
+﻿import os
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -20,12 +20,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.postgres',
     # third
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'pgvector.django',
+    'drf_spectacular',
     # business
     'apps.users',
     'apps.knowledge',
@@ -42,10 +44,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'apps.common.middleware.AuditMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
 ]
 
-ROOT_URLCONF = 'flyrain_kb.urls'
+ROOT_URLCONF = 'fhzsk.urls'
 
 TEMPLATES = [
     {
@@ -63,14 +66,14 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'flyrain_kb.wsgi.application'
+WSGI_APPLICATION = 'fhzsk.wsgi.application'
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': os.getenv("DB_NAME", "flyrain_kb"),
-        'USER': os.getenv("DB_USER", "flyrain"),
-        'PASSWORD': os.getenv("DB_PASSWORD", "flyrain123"),
+        'NAME': os.getenv("DB_NAME", "fhzsk"),
+        'USER': os.getenv("DB_USER", "fhzsk"),
+        'PASSWORD': os.getenv("DB_PASSWORD", "fhzsk123"),
         'HOST': os.getenv("DB_HOST", "127.0.0.1"),
         'PORT': os.getenv("DB_PORT", "5432"),
     }
@@ -89,6 +92,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
     'EXCEPTION_HANDLER': 'apps.common.utils.custom_exception_handler',
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 # CORS
@@ -125,3 +129,18 @@ DEFAULT_EMBEDDING_DIM = int(os.getenv("DEFAULT_EMBEDDING_DIM", "1024"))
 
 STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# 全文检索分词器配置
+# simple: 默认，英文按空格切分、中文按单字切分（无需额外扩展）
+# jieba:  中文精准分词，需在 PostgreSQL 中安装 pg_jieba 扩展（CREATE EXTENSION jieba;）
+SEARCH_CONFIG = os.getenv("SEARCH_CONFIG", "simple")
+
+# drf-spectacular API 文档
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'FHZSK API',
+    'DESCRIPTION': 'FHZSK — 企业级 RAG 知识库问答平台 API 文档',
+    'VERSION': '0.1.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SCHEMA_PATH_PREFIX': '/api/',
+}

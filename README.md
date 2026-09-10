@@ -1,7 +1,7 @@
-# 飞虹智知识库 flyrain-kb
+﻿# FHZSK fhzsk
 
 > 对标 MaxKB 的企业级 RAG 知识库问答平台（可私有化部署）
-> 公司：晋江市飞虹智科技企业管理有限公司 · 中心：飞扬企源研发中心 · 负责人：吴赐虹
+> 公司：晋江市FHZSK科技企业管理有限公司 · 中心：飞扬企源研发中心 · 负责人：吴赐虹
 
 ## 技术栈
 
@@ -13,7 +13,7 @@
 ## 目录结构
 
 ```
-flyrain-kb/
+fhzsk/
 ├── backend/        # Django 后端（apps: users/knowledge/application/chat/model_provider/common）
 ├── frontend/       # Vue3 前端
 └── deploy/         # docker-compose / nginx
@@ -25,31 +25,31 @@ flyrain-kb/
 
 ```bash
 # 生成完整项目（后端 + 前端 + docker-compose）
-npx flyrain-kb init my-kb
+npx fhzsk init my-kb
 cd my-kb
 
 # 编辑 backend/.env 填入真实模型密钥（init 已自动从 .env.example 生成）
 #   DEFAULT_LLM_API_KEY / DEFAULT_LLM_BASE_URL / DEFAULT_EMBEDDING_MODEL
 
 # 拉起全栈（postgres / redis / backend / worker / frontend）
-npx flyrain-kb up
+npx fhzsk up
 
 # 创建管理员
-npx flyrain-kb seed-admin --username admin --password admin123
+npx fhzsk seed-admin --username admin --password admin123
 ```
 
-也可全局安装后直接使用 `flyrain-kb` 命令：
+也可全局安装后直接使用 `fhzsk` 命令：
 
 ```bash
-npm i -g flyrain-kb
-flyrain-kb --help
+npm i -g fhzsk
+fhzsk --help
 ```
 
 ### CLI 命令
 
 | 命令 | 说明 |
 | --- | --- |
-| `init [目录]` | 生成完整项目源码（默认目录 `flyrain-kb`），`--force` 覆盖非空目录 |
+| `init [目录]` | 生成完整项目源码（默认目录 `fhzsk`），`--force` 覆盖非空目录 |
 | `up [目录]` | `docker compose up -d --build` 启动全栈 |
 | `down [目录]` | 停止并移除容器 |
 | `logs [目录]` | 跟踪查看容器日志 |
@@ -61,8 +61,18 @@ flyrain-kb --help
 ## 快速开始（已有源码，直接 Docker）
 
 ```bash
+# 1) 配置模型密钥（必须，否则 embedding/对话会失败）
+cd backend
+cp .env.example .env
+#    编辑 .env 设置 DEFAULT_LLM_API_KEY / DEFAULT_LLM_BASE_URL / DEFAULT_EMBEDDING_MODEL
+cd ..
+
+# 2) 构建并启动全部服务（postgres / redis / backend / worker / frontend）
 cd deploy
 docker compose up -d --build
+
+# 3) 创建管理员账户
+docker compose exec backend python manage.py seed_admin --username admin --password admin123
 ```
 
 - 前端控制台：http://localhost:8080

@@ -1,8 +1,8 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
- * flyrain-kb CLI — 飞虹智知识库一键脚手架与部署工具
+ * fhzsk CLI — FHZSK一键脚手架与部署工具
  *
- * 公司：晋江市飞虹智科技企业管理有限公司
+ * 公司：晋江市FHZSK科技企业管理有限公司
  * 中心：飞扬企源研发中心
  * 负责人：吴赐虹
  */
@@ -74,7 +74,7 @@ function copyTemplate(destDir) {
   for (const d of TEMPLATE_DIRS) {
     const from = path.join(PKG_ROOT, d)
     if (!fs.existsSync(from)) {
-      die(`包内缺少模板目录 ${d}，安装可能不完整，请重新 npm i -g flyrain-kb`)
+      die(`包内缺少模板目录 ${d}，安装可能不完整，请重新 npm i -g fhzsk`)
     }
     fs.cpSync(from, path.join(destDir, d), { recursive: true, filter })
   }
@@ -86,7 +86,7 @@ function copyTemplate(destDir) {
 
 function cmdInit(args) {
   const force = args.includes('--force') || args.includes('-f')
-  const target = args.find((a) => !a.startsWith('-')) || 'flyrain-kb'
+  const target = args.find((a) => !a.startsWith('-')) || 'fhzsk'
   const destDir = path.resolve(process.cwd(), target)
 
   if (fs.existsSync(destDir)) {
@@ -98,7 +98,7 @@ function cmdInit(args) {
     fs.mkdirSync(destDir, { recursive: true })
   }
 
-  log(`\n${C.bold}飞虹智知识库${C.reset} ${C.dim}v${PKG.version}${C.reset}  正在生成项目…\n`)
+  log(`\n${C.bold}FHZSK${C.reset} ${C.dim}v${PKG.version}${C.reset}  正在生成项目…\n`)
 
   copyTemplate(destDir)
   ok(`源码已生成：${destDir}`)
@@ -119,9 +119,9 @@ function cmdInit(args) {
   log(`\n${C.bold}下一步${C.reset}`)
   log(`  ${C.cyan}cd ${target}${C.reset}`)
   log(`  ${C.dim}# 1) 编辑 backend/.env 填入模型密钥${C.reset}`)
-  log(`  ${C.cyan}flyrain-kb up${C.reset}          ${C.dim}# 或 cd deploy && docker compose up -d --build${C.reset}`)
+  log(`  ${C.cyan}fhzsk up${C.reset}          ${C.dim}# 或 cd deploy && docker compose up -d --build${C.reset}`)
   log(`  ${C.dim}# 2) 创建管理员${C.reset}`)
-  log(`  ${C.cyan}flyrain-kb seed-admin${C.reset}`)
+  log(`  ${C.cyan}fhzsk seed-admin${C.reset}`)
   log(`\n  前端 ${C.cyan}http://localhost:8080${C.reset}   后端 ${C.cyan}http://localhost:8000${C.reset}\n`)
 }
 
@@ -133,7 +133,7 @@ function resolveProject(args) {
   if (!fs.existsSync(compose)) {
     die(
       `未找到 deploy/docker-compose.yml（查找位置：${root}）\n` +
-        `  请在项目根目录执行，或先运行 flyrain-kb init`
+        `  请在项目根目录执行，或先运行 fhzsk init`
     )
   }
   return path.join(root, 'deploy')
@@ -183,14 +183,14 @@ function valueOf(args, flag) {
 
 function help() {
   log(`
-${C.bold}飞虹智知识库 flyrain-kb${C.reset} ${C.dim}v${PKG.version}${C.reset}
+${C.bold}FHZSK fhzsk${C.reset} ${C.dim}v${PKG.version}${C.reset}
 私有化部署的 RAG 知识库问答平台（Django 5 + Vue 3 + PostgreSQL/pgvector）
 
 ${C.bold}用法${C.reset}
-  flyrain-kb <命令> [选项]
+  fhzsk <命令> [选项]
 
 ${C.bold}命令${C.reset}
-  init [目录]            生成完整项目源码（默认目录 flyrain-kb）
+  init [目录]            生成完整项目源码（默认目录 fhzsk）
                          --force  目标目录非空时强制覆盖
   up [目录]              docker compose up -d --build 启动全栈
   down [目录]            停止并移除容器
@@ -203,11 +203,11 @@ ${C.bold}选项${C.reset}
   -h, --help             显示帮助
 
 ${C.bold}快速开始${C.reset}
-  ${C.cyan}npx flyrain-kb init my-kb${C.reset}
+  ${C.cyan}npx fhzsk init my-kb${C.reset}
   ${C.cyan}cd my-kb${C.reset}   ${C.dim}# 编辑 backend/.env 填模型密钥${C.reset}
-  ${C.cyan}flyrain-kb up${C.reset}
+  ${C.cyan}fhzsk up${C.reset}
 
-${C.dim}晋江市飞虹智科技企业管理有限公司 · 飞扬企源研发中心 · 负责人：吴赐虹${C.reset}
+${C.dim}晋江市FHZSK科技企业管理有限公司 · 飞扬企源研发中心 · 负责人：吴赐虹${C.reset}
 `)
 }
 
@@ -233,7 +233,7 @@ function main() {
     case 'seed-admin':
       return cmdSeedAdmin(rest)
     default:
-      die(`未知命令：${cmd}\n  运行 flyrain-kb --help 查看可用命令`)
+      die(`未知命令：${cmd}\n  运行 fhzsk --help 查看可用命令`)
   }
 }
 

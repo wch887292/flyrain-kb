@@ -37,6 +37,10 @@
         <el-form-item label="温度">
           <el-slider v-model="form.temperature" :min="0" :max="1" :step="0.1" style="width:100%" />
         </el-form-item>
+        <el-form-item label="向量检索权重">
+          <el-slider v-model="form.vector_weight" :min="0" :max="1" :step="0.1" style="width:100%" />
+          <div class="form-tip">向量检索 {{ Math.round((form.vector_weight || 0) * 100) }}% / 关键词检索 {{ Math.round((1 - (form.vector_weight || 0)) * 100) }}%</div>
+        </el-form-item>
         <el-form-item label="最大Token">
           <el-input-number v-model="form.max_tokens" :min="256" :max="4096" :step="256" />
         </el-form-item>
@@ -68,7 +72,8 @@ const editing = ref<Application | null>(null)
 const saving = ref(false)
 
 const form = reactive<Partial<Application>>({
-  name: '', desc: '', kb_ids: [], system_prompt: '', temperature: 0.7, max_tokens: 1024
+  name: '', desc: '', kb_ids: [], system_prompt: '',
+  temperature: 0.7, vector_weight: 0.7, max_tokens: 1024
 })
 
 async function load() {
@@ -83,6 +88,7 @@ function openDialog(app?: Application) {
   form.kb_ids = app?.kb_ids || []
   form.system_prompt = app?.system_prompt || ''
   form.temperature = app?.temperature ?? 0.7
+  form.vector_weight = app?.vector_weight ?? 0.7
   form.max_tokens = app?.max_tokens ?? 1024
   dialog.value = true
 }
@@ -114,4 +120,5 @@ onMounted(load)
 .app-desc { color: #6b7280; font-size: 13px; height: 38px; overflow: hidden; }
 .app-meta { color: #9ca3af; font-size: 12px; margin: 10px 0; }
 .app-actions { text-align: right; }
+.form-tip { font-size: 12px; color: #9ca3af; margin-top: 4px; }
 </style>

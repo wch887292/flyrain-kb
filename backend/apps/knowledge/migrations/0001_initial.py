@@ -17,6 +17,20 @@ class Migration(migrations.Migration):
         # 建表前先启用 pgvector 扩展
         VectorExtension(),
         migrations.CreateModel(
+            name='KnowledgeBase',
+            fields=[
+                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                ('name', models.CharField(max_length=200, verbose_name='名称')),
+                ('desc', models.TextField(blank=True, default='', verbose_name='描述')),
+                ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='kbs', to='users.tenant', verbose_name='租户')),
+                ('create_time', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
+            ],
+            options={
+                'verbose_name': '知识库',
+                'verbose_name_plural': '知识库',
+            },
+        ),
+        migrations.CreateModel(
             name='Document',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
@@ -32,20 +46,6 @@ class Migration(migrations.Migration):
             options={
                 'verbose_name': '文档',
                 'verbose_name_plural': '文档',
-            },
-        ),
-        migrations.CreateModel(
-            name='KnowledgeBase',
-            fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=200, verbose_name='名称')),
-                ('desc', models.TextField(blank=True, default='', verbose_name='描述')),
-                ('tenant', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='kbs', to='users.tenant', verbose_name='租户')),
-                ('create_time', models.DateTimeField(auto_now_add=True, verbose_name='创建时间')),
-            ],
-            options={
-                'verbose_name': '知识库',
-                'verbose_name_plural': '知识库',
             },
         ),
         migrations.CreateModel(

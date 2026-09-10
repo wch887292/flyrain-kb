@@ -4,6 +4,7 @@ import { useUserStore } from '@/store/user'
 
 const routes = [
   { path: '/login', name: 'Login', component: () => import('@/views/Login.vue') },
+  { path: '/agent/share/:shareCode', name: 'AgentShare', component: () => import('@/views/AgentShare.vue') },
   {
     path: '/',
     component: Layout,
@@ -45,6 +46,60 @@ const routes = [
         name: 'UserManagement',
         component: () => import('@/views/UserManagement.vue'),
         meta: { title: '用户管理', roles: ['admin'] }
+      },
+      {
+        path: 'audit',
+        name: 'AuditLog',
+        component: () => import('@/views/AuditLog.vue'),
+        meta: { title: '审计日志', roles: ['admin'] }
+      },
+      {
+        path: 'dashboard',
+        name: 'Dashboard',
+        component: () => import('@/views/Dashboard.vue'),
+        meta: { title: '数据分析', roles: ['admin', 'editor'] }
+      },
+      {
+        path: 'workflow',
+        name: 'Workflow',
+        component: () => import('@/views/Workflow.vue'),
+        meta: { title: '工作流编排', roles: ['admin', 'editor'] }
+      },
+      {
+        path: 'plugins',
+        name: 'Plugin',
+        component: () => import('@/views/Plugin.vue'),
+        meta: { title: '插件管理', roles: ['admin', 'editor'] }
+      },
+      {
+        path: 'api-keys',
+        name: 'ApiKey',
+        component: () => import('@/views/ApiKey.vue'),
+        meta: { title: 'API Key', roles: ['admin', 'editor', 'user'] }
+      },
+      {
+        path: 'agents',
+        name: 'AgentManage',
+        component: () => import('@/views/AgentManage.vue'),
+        meta: { title: '智能体管理', roles: ['admin', 'editor'] }
+      },
+      {
+        path: 'agent/chat/:id?',
+        name: 'AgentChat',
+        component: () => import('@/views/AgentChat.vue'),
+        meta: { title: '智能体对话' }
+      },
+      {
+        path: 'agent-templates',
+        name: 'AgentTemplate',
+        component: () => import('@/views/AgentTemplate.vue'),
+        meta: { title: '智能体模板' }
+      },
+      {
+        path: 'mcp-servers',
+        name: 'MCPServer',
+        component: () => import('@/views/MCPServer.vue'),
+        meta: { title: 'MCP 服务器', roles: ['admin', 'editor'] }
       }
     ]
   }
@@ -57,14 +112,12 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
   const token = localStorage.getItem('access_token')
-  // 已登录访问登录页 -> 跳首页
   if (to.path === '/login') {
     return next(token ? '/' : undefined)
   }
   if (to.meta.requiresAuth && !token) {
     return next('/login')
   }
-  // 已登录但用户态未加载，先拉取资料（含角色）
   const userStore = useUserStore()
   if (token && !userStore.user) {
     try {
@@ -74,7 +127,6 @@ router.beforeEach(async (to, _from, next) => {
       return next('/login')
     }
   }
-  // 角色校验
   const roles = to.meta.roles as string[] | undefined
   if (roles && userStore.role && !roles.includes(userStore.role)) {
     return next('/')

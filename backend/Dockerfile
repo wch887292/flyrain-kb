@@ -1,8 +1,8 @@
-FROM python:3.11-slim
+﻿FROM python:3.11-slim
 
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    DJANGO_SETTINGS_MODULE=flyrain_kb.settings.prod
+    DJANGO_SETTINGS_MODULE=fhzsk.settings.prod
 
 WORKDIR /app
 
@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 8000
 
-CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn flyrain_kb.wsgi:application -b 0.0.0.0:8000 --workers 2"]
+CMD ["sh", "-c", "python manage.py migrate --noinput && gunicorn fhzsk.wsgi:application -b 0.0.0.0:8000 --workers 2"]

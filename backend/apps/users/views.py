@@ -1,15 +1,16 @@
 from rest_framework import status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.common.rbac import RoleRequiredMixin, ROLE_ADMIN
+from apps.common.utils import get_request_tenant, ok, fail
 from apps.users.serializers import (
     LoginSerializer, RegisterSerializer, UserSerializer, AdminUserWriteSerializer
 )
-from apps.users.models import User
+from apps.users.models import User, ApiKey
 
 
 class LoginView(TokenObtainPairView):
@@ -33,7 +34,6 @@ def profile(request):
 
 
 class UserViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
-    """用户管理（仅 admin 可读写）。返回扁平数组，便于前端管理表格直接渲染。"""
     queryset = User.objects.all().order_by('-create_time')
     serializer_class = UserSerializer
     read_roles = (ROLE_ADMIN,)
@@ -56,10 +56,59 @@ class UserViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     def perform_destroy(self, instance):
         self._check_write()
-        # 防止删除自己
         if instance.id == self.request.user.id:
             raise ValidationError('不能删除当前登录的账号')
-        # 防止删除最后一名管理员
         if instance.role == ROLE_ADMIN and User.objects.filter(role=ROLE_ADMIN).count() <= 1:
             raise ValidationError('至少需保留一名管理员')
         super().perform_destroy(instance)
+
+
+class ApiKeyViewSet(viewsets.ModelViewSet):
+    """API Key 管理：用户可创建、查看、删除自己的 API Key。"""
+    permission_classes = [IsAuthenticated]
+    pagination_class = None
+
+    def get_queryset(self):
+        return ApiKey.objects.filter(user=self.request.user).order_by('-create_time')
+
+    def list(self, request, *args, **kwargs):
+        qs = self.get_queryset()
+        return ok([{
+            'id': k.id, 'name': k.name, 'key_prefix': k.key_prefix,
+            'status': k.status, 'call_count': k.call_count,
+            'last_used_at': k.last_used_at.strftime('%Y-%m-%d %H:%M:%S') if k.last_used_at else None,
+            'expires_at': k.expires_at.strftime('%Y-%m-%d %H:%M:%S') if k.expires_at else None,
+            'create_time': k.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+        } for k in qs])
+
+    def create(self, request, *args, **kwargs):
+        name = request.data.get('name', '')
+        if not name:
+            return fail('名称必填', code=400)
+        tenant = get_request_tenant(request)
+        api_key = ApiKey.objects.create(
+            name=name, user=request.user, tenant=tenant, status='active',
+        )
+        return ok({
+            'id': api_key.id, 'name': api_key.name,
+            'key': api_key.key,  # 仅创建时返回完整 key
+            'key_prefix': api_key.key_prefix,
+            'create_time': api_key.create_time.strftime('%Y-%m-%d %H:%M:%S'),
+        }, message='API Key 已创建，请妥善保存（仅显示一次）')
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.user_id != request.user.id:
+            return fail('无权限', code=403)
+        instance.delete()
+        return ok({}, message='已删除')
+
+    @action(detail=True, methods=['post'])
+    def toggle(self, request, pk=None):
+        """启用/禁用 API Key。"""
+        instance = self.get_object()
+        if instance.user_id != request.user.id:
+            return fail('无权限', code=403)
+        instance.status = 'disabled' if instance.status == 'active' else 'active'
+        instance.save(update_fields=['status'])
+        return ok({'status': instance.status}, message=f'已{"禁用" if instance.status == "disabled" else "启用"}')

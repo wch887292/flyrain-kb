@@ -18,6 +18,11 @@
       <el-table-column prop="base_url" label="Base URL" show-overflow-tooltip />
       <el-table-column prop="model_name" label="模型" width="160" />
       <el-table-column prop="dimensions" label="维度" width="80" />
+      <el-table-column label="视觉" width="80" align="center">
+        <template #default="{ row }">
+          <el-tag v-if="row.supports_vision" size="small" type="success">支持</el-tag>
+        </template>
+      </el-table-column>
       <el-table-column label="默认" width="80">
         <template #default="{ row }">
           <el-icon v-if="row.is_default" color="#67c23a"><CircleCheck /></el-icon>
@@ -45,6 +50,20 @@
         <el-form-item label="向量维度" v-if="form.type === 'embedding'">
           <el-input-number v-model="form.dimensions" :min="64" :max="4096" :step="64" />
         </el-form-item>
+        <el-form-item label="支持视觉理解" v-if="form.type === 'llm'">
+          <el-switch v-model="form.supports_vision" />
+          <span style="margin-left:8px; font-size:12px; color:#9ca3af">
+            开启后可用于 PDF 图片内容理解
+          </span>
+        </el-form-item>
+        <el-form-item label="输入单价" v-if="form.type === 'llm'">
+          <el-input-number v-model="form.price_input_per_1m" :min="0" :step="0.1" />
+          <span style="margin-left:8px; font-size:12px; color:#9ca3af">$/1M tokens</span>
+        </el-form-item>
+        <el-form-item label="输出单价" v-if="form.type === 'llm'">
+          <el-input-number v-model="form.price_output_per_1m" :min="0" :step="0.1" />
+          <span style="margin-left:8px; font-size:12px; color:#9ca3af">$/1M tokens</span>
+        </el-form-item>
         <el-form-item label="设为默认">
           <el-switch v-model="form.is_default" />
         </el-form-item>
@@ -68,7 +87,8 @@ const dialog = ref(false)
 const saving = ref(false)
 const form = reactive<Partial<ModelProvider>>({
   name: '', type: 'llm', base_url: '', api_key: '', model_name: '',
-  dimensions: 1024, is_default: false
+  dimensions: 1024, supports_vision: false,
+  price_input_per_1m: 0, price_output_per_1m: 0, is_default: false
 })
 
 async function load() {

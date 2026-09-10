@@ -25,8 +25,10 @@ class DocumentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Document
         fields = ('id', 'kb', 'name', 'source_type', 'status', 'char_count',
+                  'has_images', 'has_tables', 'image_count', 'table_count',
                   'error_msg', 'create_time')
-        read_only_fields = ('id', 'status', 'char_count', 'error_msg', 'create_time')
+        read_only_fields = ('id', 'status', 'char_count', 'has_images', 'has_tables',
+                            'image_count', 'table_count', 'error_msg', 'create_time')
 
 
 class ParagraphSerializer(serializers.ModelSerializer):

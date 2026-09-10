@@ -1,7 +1,7 @@
-<template>
+﻿<template>
   <div class="login-wrap">
     <el-card class="login-card">
-      <h2 class="title">飞虹智知识库</h2>
+      <h2 class="title">FHZSK</h2>
       <el-tabs v-model="mode">
         <el-tab-pane label="登录" name="login" />
         <el-tab-pane label="注册" name="register" />

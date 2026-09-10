@@ -1,9 +1,9 @@
-import os
+﻿import os
 from celery import Celery
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'flyrain_kb.settings.dev')
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'fhzsk.settings.dev')
 
-app = Celery('flyrain_kb')
+app = Celery('fhzsk')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 

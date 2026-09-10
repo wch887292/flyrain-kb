@@ -1,7 +1,7 @@
-{
-  "name": "flyrain-kb",
+﻿{
+  "name": "fhzsk",
   "version": "0.1.1",
-  "description": "飞虹智知识库 — 可私有化部署的 RAG 知识库问答平台脚手架与部署 CLI。Django 5 + DRF + Celery + Vue 3 + PostgreSQL/pgvector，混合检索与 SSE 流式问答，一条命令生成项目并用 Docker 拉起全栈。",
+  "description": "FHZSK — 可私有化部署的 RAG 知识库问答平台脚手架与部署 CLI。Django 5 + DRF + Celery + Vue 3 + PostgreSQL/pgvector，混合检索与 SSE 流式问答，一条命令生成项目并用 Docker 拉起全栈。",
   "keywords": [
     "rag",
     "knowledge-base",
@@ -23,15 +23,15 @@
   "author": "吴赐虹 (飞扬企源研发中心 · 晋江市飞虹智科技企业管理有限公司)",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wch887292/flyrain-kb.git"
+    "url": "git+https://github.com/wch887292/fhzsk.git"
   },
-  "homepage": "https://github.com/wch887292/flyrain-kb#readme",
+  "homepage": "https://github.com/wch887292/fhzsk#readme",
   "bugs": {
-    "url": "https://github.com/wch887292/flyrain-kb/issues"
+    "url": "https://github.com/wch887292/fhzsk/issues"
   },
   "type": "commonjs",
   "bin": {
-    "flyrain-kb": "bin/cli.js"
+    "fhzsk": "bin/cli.js"
   },
   "files": [
     "bin/",

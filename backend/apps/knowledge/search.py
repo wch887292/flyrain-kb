@@ -1,11 +1,16 @@
 """检索逻辑：向量检索 / 关键词检索 / 混合检索"""
+import logging
 from typing import List, Dict, Any
 
+from django.conf import settings
 from django.db.models import Q
+from django.contrib.postgres.search import SearchQuery, SearchRank
 from pgvector.django import CosineDistance
 
 from apps.knowledge.models import Paragraph, KnowledgeBase
 from apps.model_provider.llm_adapter import embed_texts
+
+logger = logging.getLogger(__name__)
 
 
 def vector_search(kb: KnowledgeBase, query_vector: List[float],
@@ -24,29 +29,32 @@ def vector_search(kb: KnowledgeBase, query_vector: List[float],
 
 
 def keyword_search(kb: KnowledgeBase, query: str, top_k: int = 5) -> List[Dict[str, Any]]:
+    """PostgreSQL 全文检索：基于 search_vector (tsvector) + GIN 索引。
+
+    使用 settings.SEARCH_CONFIG 配置的分词器（simple / jieba），
+    多词之间为 OR 关系，按 SearchRank 相关性排序。
+    """
+    config = getattr(settings, 'SEARCH_CONFIG', 'simple')
     terms = [t for t in query.replace('，', ' ').replace(',', ' ').split() if len(t) > 1]
     if not terms:
         terms = [query]
-    q = Q()
-    for t in terms:
-        q |= Q(content__icontains=t)
+
+    # 构建多词 OR 查询
+    search_query = SearchQuery(terms[0], config=config)
+    for t in terms[1:]:
+        search_query |= SearchQuery(t, config=config)
+
     qs = (Paragraph.objects
-          .filter(doc__kb=kb)
-          .filter(q)
-          .order_by('index')[:top_k * 2])
-    scored = []
-    for p in qs:
-        hit = sum(p.content.count(t) for t in terms)
-        if hit == 0:
-            continue
-        scored.append({
-            'paragraph': p,
-            'score': min(1.0, hit / 10.0),
-            'doc_name': p.doc.name,
-            'page_no': p.page_no,
-        })
-    scored.sort(key=lambda x: x['score'], reverse=True)
-    return scored[:top_k]
+          .filter(doc__kb=kb, search_vector=search_query)
+          .annotate(rank=SearchRank('search_vector', search_query))
+          .order_by('-rank')[:top_k])
+
+    return [{
+        'paragraph': p,
+        'score': min(1.0, float(p.rank)),  # SearchRank 归一化到 0~1
+        'doc_name': p.doc.name,
+        'page_no': p.page_no,
+    } for p in qs]
 
 
 def hybrid_search(kb: KnowledgeBase, query: str, top_k: int = 5,
@@ -56,9 +64,14 @@ def hybrid_search(kb: KnowledgeBase, query: str, top_k: int = 5,
     try:
         q_vec = embed_texts([query])[0]
         v_results = vector_search(kb, q_vec, top_k=top_k * 2)
-    except Exception:  # noqa
+    except Exception as e:
+        logger.warning("混合检索-向量检索失败，回退纯关键词检索: kb=%s, error=%s", kb.id, e)
         v_results = []
-    k_results = keyword_search(kb, query, top_k=top_k * 2)
+    try:
+        k_results = keyword_search(kb, query, top_k=top_k * 2)
+    except Exception as e:
+        logger.warning("混合检索-关键词检索失败: kb=%s, error=%s", kb.id, e)
+        k_results = []
 
     merged = {}
     for r in v_results:

@@ -1,7 +1,7 @@
-<template>
+﻿<template>
   <el-container class="layout">
     <el-aside width="220px" class="aside">
-      <div class="logo">飞虹智知识库</div>
+      <div class="logo">FHZSK</div>
       <el-menu :default-active="activeMenu" router class="menu">
         <el-menu-item index="/knowledge">
           <el-icon><Collection /></el-icon><span>知识库</span>
@@ -9,11 +9,41 @@
         <el-menu-item index="/apps" v-if="['admin', 'editor'].includes(role)">
           <el-icon><ChatDotRound /></el-icon><span>AI 应用</span>
         </el-menu-item>
+        <el-menu-item index="/chat">
+          <el-icon><ChatLineSquare /></el-icon><span>对话</span>
+        </el-menu-item>
+        <el-menu-item index="/agent/chat">
+          <el-icon><MagicStick /></el-icon><span>智能体对话</span>
+        </el-menu-item>
+        <el-menu-item index="/agents" v-if="['admin', 'editor'].includes(role)">
+          <el-icon><Cpu /></el-icon><span>智能体管理</span>
+        </el-menu-item>
+        <el-menu-item index="/agent-templates">
+          <el-icon><Shop /></el-icon><span>智能体模板</span>
+        </el-menu-item>
+        <el-menu-item index="/mcp-servers" v-if="['admin', 'editor'].includes(role)">
+          <el-icon><Connection /></el-icon><span>MCP 服务器</span>
+        </el-menu-item>
+        <el-menu-item index="/workflow" v-if="['admin', 'editor'].includes(role)">
+          <el-icon><Connection /></el-icon><span>工作流编排</span>
+        </el-menu-item>
+        <el-menu-item index="/plugins" v-if="['admin', 'editor'].includes(role)">
+          <el-icon><Plug /></el-icon><span>插件管理</span>
+        </el-menu-item>
+        <el-menu-item index="/dashboard" v-if="['admin', 'editor'].includes(role)">
+          <el-icon><DataAnalysis /></el-icon><span>数据分析</span>
+        </el-menu-item>
         <el-menu-item index="/model" v-if="role === 'admin'">
           <el-icon><Setting /></el-icon><span>模型配置</span>
         </el-menu-item>
         <el-menu-item index="/users" v-if="role === 'admin'">
           <el-icon><User /></el-icon><span>用户管理</span>
+        </el-menu-item>
+        <el-menu-item index="/api-keys">
+          <el-icon><Key /></el-icon><span>API Key</span>
+        </el-menu-item>
+        <el-menu-item index="/audit" v-if="role === 'admin'">
+          <el-icon><Notebook /></el-icon><span>审计日志</span>
         </el-menu-item>
       </el-menu>
     </el-aside>
@@ -46,7 +76,7 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const activeMenu = computed(() => '/' + (route.path.split('/')[1] || 'knowledge'))
-const title = computed(() => (route.meta.title as string) || '飞虹智知识库')
+const title = computed(() => (route.meta.title as string) || 'FHZSK')
 const role = computed(() => userStore.user?.role || '')
 
 function onCommand(cmd: string) {
