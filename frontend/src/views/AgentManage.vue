@@ -133,6 +133,10 @@
           <el-switch v-model="form.enable_code_interpreter" />
           <span style="margin-left:8px;font-size:12px;color:#9ca3af">开启后智能体可执行 Python 代码进行计算、数据分析和图表生成</span>
         </el-form-item>
+        <el-form-item label="飞虹Code编程引擎">
+          <el-switch v-model="form.enable_fhcode" />
+          <span style="margin-left:8px;font-size:12px;color:#9ca3af">开启后智能体可调用底层飞虹 Code 引擎完成真实工程级编程：编写/修改多文件代码、运行命令、排查修复 bug（需后台配置 FHCODE_TOKEN）</span>
+        </el-form-item>
         <el-form-item label="自动优化">
           <el-switch v-model="form.enable_auto_optimize" />
           <span style="margin-left:8px;font-size:12px;color:#9ca3af">对话结束后自动评价并生成优化建议</span>
@@ -253,7 +257,7 @@ const form = reactive<Partial<Agent>>({
   kb_ids: [], tool_ids: [], mcp_server_ids: [], sub_agent_ids: [],
   temperature: 0.7, max_tokens: 2048,
   max_iterations: 5, opening_message: '', suggested_questions: [],
-  enable_reasoning: true, enable_code_interpreter: false, enable_auto_optimize: false,
+  enable_reasoning: true, enable_code_interpreter: false, enable_fhcode: false, enable_auto_optimize: false,
 })
 
 const suggestedText = computed({
@@ -279,7 +283,7 @@ function openCreate() {
     kb_ids: [], tool_ids: [], mcp_server_ids: [], sub_agent_ids: [],
     temperature: 0.7, max_tokens: 2048,
     max_iterations: 5, opening_message: '', suggested_questions: [],
-    enable_reasoning: true, enable_code_interpreter: false, enable_auto_optimize: false,
+    enable_reasoning: true, enable_code_interpreter: false, enable_fhcode: false, enable_auto_optimize: false,
   })
   dialog.value = true
 }
@@ -296,6 +300,7 @@ function openEdit(row: Agent) {
     suggested_questions: row.suggested_questions || [],
     enable_reasoning: row.enable_reasoning,
     enable_code_interpreter: row.enable_code_interpreter,
+    enable_fhcode: row.enable_fhcode,
     enable_auto_optimize: row.enable_auto_optimize,
   })
   dialog.value = true

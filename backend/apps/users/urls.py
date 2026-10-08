@@ -5,8 +5,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from apps.users.views import LoginView, register, profile, UserViewSet, ApiKeyViewSet
 
 router = DefaultRouter()
-router.register(r'', UserViewSet, basename='user')
 router.register(r'api-keys', ApiKeyViewSet, basename='api-key')
+router.register(r'', UserViewSet, basename='user')
 
 urlpatterns = [
     path('register/', register, name='register'),

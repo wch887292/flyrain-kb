@@ -26,7 +26,7 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
         return qs.order_by('-create_time')
 
     def perform_create(self, serializer):
-        self._check_role()
+        self._check_write()
         tenant = get_request_tenant(self.request)
         serializer.save(tenant=tenant)
 
@@ -55,7 +55,7 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
         query: days=7（统计最近 N 天）, model_type=llm|embedding（可选）
         返回：总调用数、Token 消耗、估算成本、按天趋势、按模型分布、按用户分布。
         """
-        self._check_role()
+        self._check_read()
         days = int(request.query_params.get('days', 7))
         model_type = request.query_params.get('model_type')
         since = timezone.now() - timedelta(days=days)
@@ -63,7 +63,7 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
         qs = ModelUsage.objects.filter(create_time__gte=since, status='success')
         tenant = get_request_tenant(request)
         if tenant:
-            qs = qs.filter(tenant=tenant)
+            qs = qs.filter(user__tenant=tenant)
         if model_type:
             qs = qs.filter(model_type=model_type)
 
@@ -94,7 +94,7 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
         # 按天统计
         daily = list(
-            qs.extra(select={'day': 'DATE(create_time)'})
+            qs.extra(select={'day': 'DATE(model_provider_modelusage.create_time)'})
             .values('day')
             .annotate(
                 calls=Count('id'),

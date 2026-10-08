@@ -1,5 +1,9 @@
+import logging
+import traceback
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
+
+logger = logging.getLogger(__name__)
 
 
 def custom_exception_handler(exc, context):
@@ -26,8 +30,10 @@ def custom_exception_handler(exc, context):
             {'code': response.status_code, 'message': str(message), 'data': None},
             status=response.status_code
         )
+    # 非 DRF 标准异常，记录详细堆栈
+    logger.error("未处理异常: %s\n%s", exc, traceback.format_exc())
     return Response(
-        {'code': 500, 'message': '服务器内部错误', 'data': None}, status=500
+        {'code': 500, 'message': f'服务器内部错误: {exc}', 'data': None}, status=500
     )
 
 

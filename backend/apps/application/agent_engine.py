@@ -7,12 +7,14 @@
 - 循环直到 LLM 输出 final 或达到最大轮次
 """
 import json
+import os
 import re
 import logging
 from typing import List, Dict, Optional, Tuple, Generator
 
 from apps.application.models import Agent, Plugin
 from apps.application.code_interpreter import execute_code, format_code_result
+from apps.application import fhcode_client
 from apps.application.mcp_client import get_all_tools as get_mcp_tools, call_mcp_tool
 from apps.knowledge.search import hybrid_search
 from apps.model_provider.llm_adapter import chat_completion
@@ -62,6 +64,21 @@ def _build_tool_definitions(agent: Agent) -> List[Dict]:
             'builtin': True,
             'code': True,
         })
+    # 飞虹 Code 底层编程引擎：完整工程级编程任务（写代码、改代码、执行命令、多文件操作）
+    if getattr(agent, 'enable_fhcode', False) and fhcode_client.is_configured():
+        tools.append({
+            'name': 'fhcode_engine',
+            'display_name': '飞虹Code编程引擎',
+            'description': (
+                '底层飞虹 Code 编程引擎，可完成完整工程级任务：编写/修改/重构多文件代码、'
+                '运行测试与构建、执行命令、排查修复 bug、操作工作区文件。'
+                '适用场景：用户要求开发功能、修改项目代码、跑命令、排查工程问题等。'
+                '输入：清晰的编程任务描述（自然语言）。'
+                '简单的数学计算/数据分析/画图请用 code_interpreter；涉及真实项目代码、文件、命令时用本工具。'
+            ),
+            'builtin': True,
+            'fhcode': True,
+        })
     return tools
 
 
@@ -87,12 +104,21 @@ def _build_system_prompt(agent: Agent, tools: List[Dict]) -> str:
 - 禁止：文件操作、网络请求、导入 os/sys/subprocess/socket 等模块
 """
 
+    fhcode_hint = """
+
+## 飞虹Code编程引擎使用规则
+当用户需要真实的代码开发、修改项目文件、运行命令、排查工程问题时，使用 fhcode_engine 工具：
+- action_input 用自然语言完整描述任务（文件路径、需求、验收标准）
+- 该工具在隔离沙箱中操作真实工作区，具备完整工程能力
+- 不要用 code_interpreter 处理真实项目文件，它只适合临时计算
+""" if any(t.get('fhcode') for t in tools) else ""
+
     return f"""{agent.system_prompt}
 
 {role_text}
 ## 可用工具
 {tools_text}
-{code_hint}
+{code_hint}{fhcode_hint}
 ## 输出格式
 你必须严格按照以下 JSON 格式输出，不要输出其他内容：
 
@@ -200,6 +226,20 @@ def _execute_tool(agent: Agent, tool_name: str, action_input: str,
         obs = format_code_result(result)
         images = result.get('images', [])
         return '代码执行', obs, images
+
+    if tool.get('fhcode') and tool_name == 'fhcode_engine':
+        # 飞虹 Code 底层编程引擎：提交任务并等待执行结果
+        try:
+            answer = fhcode_client.run_task(action_input, timeout=float(os.environ.get('FHCODE_TIMEOUT', '300')))
+            return '飞虹Code编程引擎', answer[:8000], []
+        except fhcode_client.FhcodeNotConfigured:
+            return '飞虹Code编程引擎', '错误：飞虹 Code 引擎未配置（缺少 FHCODE_TOKEN）', []
+        except fhcode_client.FhcodeTimeout:
+            return '飞虹Code编程引擎', '错误：飞虹 Code 任务执行超时，任务仍在后台运行，可稍后查询', []
+        except fhcode_client.FhcodeTaskFailed as e:
+            return '飞虹Code编程引擎', f'任务执行失败：{str(e)}', []
+        except fhcode_client.FhcodeError as e:
+            return '飞虹Code编程引擎', f'引擎调用失败：{str(e)}', []
 
     # HTTP 插件工具
     try:

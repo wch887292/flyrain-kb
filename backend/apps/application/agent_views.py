@@ -38,6 +38,7 @@ class AgentSerializer(serializers.ModelSerializer):
                   'kb_ids', 'kb_names', 'tool_ids', 'tool_names',
                   'temperature', 'max_tokens', 'max_iterations',
                   'opening_message', 'suggested_questions', 'enable_reasoning',
+                  'enable_code_interpreter', 'enable_fhcode',
                   'is_active', 'create_time', 'update_time')
         read_only_fields = ('id', 'kb_names', 'tool_names', 'create_time', 'update_time')
 

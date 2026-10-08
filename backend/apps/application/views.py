@@ -10,7 +10,8 @@ from rest_framework.response import Response
 
 from apps.application.models import Application, Workflow, WorkflowStep, WorkflowExecution, Plugin
 from apps.application.serializers import (
-    ApplicationSerializer, WorkflowSerializer, WorkflowStepSerializer, WorkflowExecutionSerializer
+    ApplicationSerializer, WorkflowSerializer, WorkflowStepSerializer, WorkflowExecutionSerializer,
+    PluginSerializer
 )
 from apps.common.utils import get_request_tenant, ok, fail
 from apps.common.rbac import RoleRequiredMixin, ROLE_ADMIN, ROLE_EDITOR
@@ -37,6 +38,7 @@ class ApplicationViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 class PluginViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
     """插件管理：HTTP 插件，可在工作流步骤中调用。"""
     write_roles = (ROLE_ADMIN, ROLE_EDITOR)
+    serializer_class = PluginSerializer
     pagination_class = None
 
     def get_queryset(self):
@@ -47,7 +49,7 @@ class PluginViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
         return qs.order_by('-create_time')
 
     def perform_create(self, serializer):
-        self._check_role()
+        self._check_write()
         tenant = get_request_tenant(self.request)
         serializer.save(tenant=tenant)
 
@@ -125,7 +127,7 @@ class WorkflowViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def add_step(self, request, pk=None):
-        self._check_role()
+        self._check_write()
         wf = self.get_object()
         data = request.data.copy()
         if 'order' not in data:
@@ -137,7 +139,7 @@ class WorkflowViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def reorder_steps(self, request, pk=None):
-        self._check_role()
+        self._check_write()
         wf = self.get_object()
         step_ids = request.data.get('step_ids', [])
         if not isinstance(step_ids, list) or not step_ids:
@@ -149,7 +151,7 @@ class WorkflowViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=['delete'])
     def delete_step(self, request, pk=None):
         """删除步骤。body: {step_id}"""
-        self._check_role()
+        self._check_write()
         wf = self.get_object()
         step_id = request.data.get('step_id')
         if not step_id:

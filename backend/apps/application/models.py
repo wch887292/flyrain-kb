@@ -111,6 +111,7 @@ class Agent(models.Model):
     suggested_questions = models.JSONField(default=list, verbose_name="建议问题")
     enable_reasoning = models.BooleanField(default=True, verbose_name="展示思考过程")
     enable_code_interpreter = models.BooleanField(default=False, verbose_name="启用代码执行")
+    enable_fhcode = models.BooleanField(default=False, verbose_name="启用飞虹Code编程引擎")
     enable_auto_optimize = models.BooleanField(default=False, verbose_name="启用自动优化")
     # 分享发布
     is_public = models.BooleanField(default=False, verbose_name="是否公开")

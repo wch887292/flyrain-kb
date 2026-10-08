@@ -46,7 +46,7 @@ class KnowledgeBaseViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def upload(self, request, pk=None):
-        self._check_role()
+        self._check_write()
         kb = self.get_object()
         file = request.FILES.get('file')
         if not file:
@@ -105,7 +105,7 @@ class KnowledgeBaseViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=False, methods=['post'])
     def import_kb(self, request):
-        self._check_role()
+        self._check_write()
         name = request.data.get('name') or '导入的知识库'
         desc = request.data.get('desc', '')
         documents = request.data.get('documents', [])
@@ -133,7 +133,7 @@ class KnowledgeBaseViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def grant_access(self, request, pk=None):
-        self._check_role()
+        self._check_write()
         kb = self.get_object()
         user_ids = request.data.get('user_ids', [])
         if not isinstance(user_ids, list) or not user_ids:
@@ -145,7 +145,7 @@ class KnowledgeBaseViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def revoke_access(self, request, pk=None):
-        self._check_role()
+        self._check_write()
         kb = self.get_object()
         user_ids = request.data.get('user_ids', [])
         if not isinstance(user_ids, list) or not user_ids:
@@ -157,7 +157,7 @@ class KnowledgeBaseViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def set_public(self, request, pk=None):
-        self._check_role()
+        self._check_write()
         kb = self.get_object()
         kb.authorized_users.clear()
         return ok({'is_public': True}, message='已设为公开')

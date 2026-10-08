@@ -22,6 +22,7 @@
         <div class="card-desc">{{ t.description }}</div>
         <div class="card-meta">
           <el-tag v-if="t.enable_code_interpreter" size="small" type="success">代码执行</el-tag>
+          <el-tag v-if="t.enable_fhcode" size="small" type="primary">飞虹Code引擎</el-tag>
           <el-tag v-if="t.enable_reasoning" size="small" type="warning">思考过程</el-tag>
           <span class="iterations">最大 {{ t.max_iterations }} 轮</span>
         </div>
@@ -85,6 +86,7 @@
         <div class="detail-row">
           <span class="label">能力：</span>
           <el-tag v-if="selectedTemplate.enable_code_interpreter" size="small" type="success" style="margin-right:4px">代码执行</el-tag>
+          <el-tag v-if="selectedTemplate.enable_fhcode" size="small" type="primary" style="margin-right:4px">飞虹Code引擎</el-tag>
           <el-tag v-if="selectedTemplate.enable_reasoning" size="small" type="warning">思考过程</el-tag>
         </div>
       </div>

@@ -6,6 +6,7 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from apps.users.models import Tenant
+from apps.common.rbac import ROLE_ADMIN
 
 User = get_user_model()
 
@@ -32,7 +33,6 @@ class Command(BaseCommand):
             tenant=tenant,
             role=ROLE_ADMIN,
         )
-        from apps.common.rbac import ROLE_ADMIN  # noqa: imported for clarity
         user.is_staff = True
         user.is_superuser = True
         user.save(update_fields=['is_staff', 'is_superuser'])

@@ -17,6 +17,8 @@ export interface Agent {
   opening_message: string
   suggested_questions: string[]
   enable_reasoning: boolean
+  enable_code_interpreter?: boolean
+  enable_fhcode?: boolean
   is_active: boolean
   create_time: string
   update_time: string
