@@ -54,6 +54,7 @@
           <span class="user">{{ userStore.user?.nickname || userStore.user?.username }}</span>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item command="change-password">修改密码</el-dropdown-item>
               <el-dropdown-item command="logout">退出登录</el-dropdown-item>
             </el-dropdown-menu>
           </template>
@@ -63,12 +64,37 @@
         <router-view />
       </el-main>
     </el-container>
+
+    <!-- 首次登录强制修改密码 -->
+    <el-dialog
+      v-model="pwdDialogVisible"
+      title="请修改初始密码"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      width="420px"
+    >
+      <el-form :model="pwdForm" label-width="80px">
+        <el-form-item label="旧密码">
+          <el-input v-model="pwdForm.old_password" type="password" show-password />
+        </el-form-item>
+        <el-form-item label="新密码">
+          <el-input v-model="pwdForm.new_password" type="password" show-password placeholder="至少6位" />
+        </el-form-item>
+        <el-form-item label="确认密码">
+          <el-input v-model="pwdForm.confirm_password" type="password" show-password />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button type="primary" :loading="pwdSaving" @click="submitPassword">确认修改</el-button>
+      </template>
+    </el-dialog>
   </el-container>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 
 const route = useRoute()
@@ -79,10 +105,50 @@ const activeMenu = computed(() => '/' + (route.path.split('/')[1] || 'knowledge'
 const title = computed(() => (route.meta.title as string) || 'FHZSK')
 const role = computed(() => userStore.user?.role || '')
 
+// 修改密码对话框
+const pwdDialogVisible = ref(false)
+const pwdSaving = ref(false)
+const pwdForm = ref({ old_password: '', new_password: '', confirm_password: '' })
+
+// 监听 mustChangePassword，首次登录时强制弹出
+watch(
+  () => userStore.mustChangePassword,
+  (val) => {
+    if (val) pwdDialogVisible.value = true
+  },
+  { immediate: true }
+)
+
+async function submitPassword() {
+  if (!pwdForm.value.old_password || !pwdForm.value.new_password) {
+    ElMessage.warning('请填写完整')
+    return
+  }
+  if (pwdForm.value.new_password.length < 6) {
+    ElMessage.warning('新密码至少6位')
+    return
+  }
+  if (pwdForm.value.new_password !== pwdForm.value.confirm_password) {
+    ElMessage.warning('两次输入的新密码不一致')
+    return
+  }
+  pwdSaving.value = true
+  try {
+    await userStore.changePassword(pwdForm.value.old_password, pwdForm.value.new_password)
+    ElMessage.success('密码修改成功')
+    pwdDialogVisible.value = false
+    pwdForm.value = { old_password: '', new_password: '', confirm_password: '' }
+  } finally {
+    pwdSaving.value = false
+  }
+}
+
 function onCommand(cmd: string) {
   if (cmd === 'logout') {
     userStore.logout()
     router.push('/login')
+  } else if (cmd === 'change-password') {
+    pwdDialogVisible.value = true
   }
 }
 </script>

@@ -33,6 +33,25 @@ def profile(request):
     return Response(UserSerializer(request.user).data)
 
 
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def change_password(request):
+    """用户修改自己的密码。修改成功后清除 must_change_password 标志。"""
+    old_password = request.data.get('old_password', '')
+    new_password = request.data.get('new_password', '')
+    if not old_password or not new_password:
+        return fail('旧密码和新密码不能为空', code=400)
+    if len(new_password) < 6:
+        return fail('新密码长度不能少于6位', code=400)
+    user = request.user
+    if not user.check_password(old_password):
+        return fail('旧密码错误', code=400)
+    user.set_password(new_password)
+    user.must_change_password = False
+    user.save(update_fields=['password', 'must_change_password'])
+    return ok(message='密码修改成功')
+
+
 class UserViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
     queryset = User.objects.all().order_by('-create_time')
     serializer_class = UserSerializer

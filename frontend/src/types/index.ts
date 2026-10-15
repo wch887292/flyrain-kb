@@ -66,7 +66,8 @@ export interface ModelProvider {
   name: string
   type: 'llm' | 'embedding'
   base_url: string
-  api_key: string
+  api_key?: string  // write_only
+  api_key_masked?: string  // 只读掩码
   model_name: string
   dimensions: number
   is_default: boolean

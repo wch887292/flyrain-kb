@@ -19,6 +19,11 @@ export function profile() {
   return request.get<User>('/users/profile/')
 }
 
+/** 修改当前用户密码 */
+export function changePassword(old_password: string, new_password: string) {
+  return request.post('/users/change-password/', { old_password, new_password })
+}
+
 /** 管理员：用户列表（扁平数组） */
 export function listUsers() {
   return request.get<User[]>('/users/')

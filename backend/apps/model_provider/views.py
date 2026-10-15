@@ -36,15 +36,47 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
         s.is_valid(raise_exception=True)
         data = s.validated_data
         try:
+            from openai import OpenAI
+            client = OpenAI(api_key=data['api_key'], base_url=data['base_url'])
             if data['type'] == 'embedding':
-                vec = embed_texts(["连通性测试"])
-                ok = bool(vec and len(vec[0]) > 0)
-                return Response({'success': ok, 'dim': len(vec[0]) if vec else 0})
-            else:
-                text = chat_completion(
-                    [{"role": "user", "content": "ping"}], max_tokens=16
+                resp = client.embeddings.create(
+                    model=data['model_name'], input=["连通性测试"]
                 )
-                return Response({'success': bool(text), 'reply': text[:50]})
+                dim = len(resp.data[0].embedding)
+                return Response({'success': True, 'dim': dim})
+            else:
+                resp = client.chat.completions.create(
+                    model=data['model_name'],
+                    messages=[{"role": "user", "content": "ping"}],
+                    max_tokens=16,
+                )
+                reply = resp.choices[0].message.content or ""
+                return Response({'success': bool(reply), 'reply': reply[:50]})
+        except Exception as e:  # noqa
+            return Response({'success': False, 'message': str(e)},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=['post'])
+    def test_connection(self, request, pk=None):
+        """用已保存的模型配置测试连通性（无需暴露 api_key）。"""
+        provider = self.get_object()
+        try:
+            from openai import OpenAI
+            client = OpenAI(api_key=provider.api_key, base_url=provider.base_url)
+            if provider.type == 'embedding':
+                resp = client.embeddings.create(
+                    model=provider.model_name, input=["连通性测试"]
+                )
+                dim = len(resp.data[0].embedding)
+                return Response({'success': True, 'dim': dim})
+            else:
+                resp = client.chat.completions.create(
+                    model=provider.model_name,
+                    messages=[{"role": "user", "content": "ping"}],
+                    max_tokens=16,
+                )
+                reply = resp.choices[0].message.content or ""
+                return Response({'success': bool(reply), 'reply': reply[:50]})
         except Exception as e:  # noqa
             return Response({'success': False, 'message': str(e)},
                             status=status.HTTP_400_BAD_REQUEST)

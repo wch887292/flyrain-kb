@@ -31,6 +31,7 @@ class User(AbstractUser):
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='user', verbose_name="角色")
     nickname = models.CharField(max_length=100, blank=True, default="", verbose_name="昵称")
+    must_change_password = models.BooleanField(default=True, verbose_name="需修改密码")
     create_time = models.DateTimeField(auto_now_add=True, verbose_name="创建时间")
 
     class Meta:

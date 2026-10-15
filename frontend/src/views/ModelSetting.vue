@@ -79,7 +79,7 @@
 <script setup lang="ts">
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import { listProviders, createProvider, testProvider } from '@/api/chat'
+import { listProviders, createProvider, testProviderById } from '@/api/chat'
 import type { ModelProvider } from '@/types'
 
 const list = ref<ModelProvider[]>([])
@@ -112,10 +112,7 @@ async function save() {
 
 async function test(row: ModelProvider) {
   try {
-    const r = await testProvider({
-      type: row.type, base_url: row.base_url,
-      api_key: row.api_key, model_name: row.model_name
-    })
+    const r = await testProviderById(row.id)
     ElMessage.success(r.success ? '连通成功' : `失败：${r.message}`)
   } catch { /* 拦截器提示 */ }
 }

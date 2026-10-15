@@ -37,6 +37,7 @@ class LoginSerializer(TokenObtainPairSerializer):
         data['nickname'] = user.nickname
         data['role'] = user.role
         data['tenant'] = user.tenant.name if user.tenant else None
+        data['must_change_password'] = user.must_change_password
         return data
 
 
