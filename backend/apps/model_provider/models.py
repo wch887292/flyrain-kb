@@ -63,6 +63,8 @@ class ModelUsage(models.Model):
         indexes = [
             models.Index(fields=['user', '-create_time']),
             models.Index(fields=['model_type', '-create_time']),
+            models.Index(fields=['status', '-create_time']),
+            models.Index(fields=['model_name', '-create_time']),
         ]
 
     def __str__(self):

@@ -35,3 +35,8 @@ class ChatMessage(models.Model):
         verbose_name = "对话消息"
         verbose_name_plural = "对话消息"
         ordering = ['create_time']
+        indexes = [
+            models.Index(fields=['session_id', 'create_time']),
+            models.Index(fields=['user', '-create_time']),
+            models.Index(fields=['app', '-create_time']),
+        ]

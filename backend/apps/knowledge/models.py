@@ -121,6 +121,10 @@ class Paragraph(models.Model):
         verbose_name = "分段"
         verbose_name_plural = "分段"
         ordering = ['index']
+        indexes = [
+            models.Index(fields=['doc', 'index']),
+            models.Index(fields=['block_type']),
+        ]
 
     def __str__(self):
         return f'{self.doc.name}#{self.index}'

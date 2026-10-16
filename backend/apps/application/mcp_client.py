@@ -128,4 +128,5 @@ def call_mcp_tool(server_id: int, tool_name: str, arguments: Dict) -> str:
     except MCPServer.DoesNotExist:
         return f"MCP 服务器不存在: {server_id}"
     except Exception as e:
+        logger.warning("MCP 工具调用失败: server=%s, tool=%s, error=%s", server_id, tool_name, e, exc_info=True)
         return f"MCP 工具调用失败: {str(e)}"

@@ -66,6 +66,7 @@ class MCPServerViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
             tools = client.list_tools()
             return ok({'tools': tools, 'count': len(tools)})
         except Exception as e:
+            logger.error("MCP 工具刷新失败: server=%s, error=%s", server.id, e, exc_info=True)
             return fail(str(e), code=500)
 
     @action(detail=True, methods=['post'])
@@ -80,6 +81,7 @@ class MCPServerViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
                 return ok({'connected': True, 'tools_count': len(tools)})
             return fail('连接失败', code=500)
         except Exception as e:
+            logger.error("MCP 连接测试失败: server=%s, error=%s", server.id, e, exc_info=True)
             return fail(str(e), code=500)
 
 

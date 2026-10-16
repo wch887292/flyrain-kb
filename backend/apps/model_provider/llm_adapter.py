@@ -100,6 +100,7 @@ def chat_completion(messages: List[Dict], temperature: float = 0.7,
     except Exception as e:
         duration = (time.time() - start) * 1000
         _record_usage('llm', cfg['model'], 0, 0, 0, duration, 'failed', str(e), user_id, app_id)
+        logger.error("LLM 调用失败: model=%s, error=%s", cfg['model'], e, exc_info=True)
         raise
 
 
@@ -137,7 +138,9 @@ def chat_completion_stream(messages: List[Dict], temperature: float = 0.7,
         )
     except Exception as e:
         duration = (time.time() - start) * 1000
-        _record_usage('llm', cfg['model'], 0, 0, 0, duration, 'failed', str(e), user_id, app_id)
+        _record_usage('llm', cfg['model'], prompt_tokens, completion_tokens,
+                      prompt_tokens + completion_tokens, duration, 'failed', str(e), user_id, app_id)
+        logger.error("LLM 流式调用失败: model=%s, error=%s", cfg['model'], e, exc_info=True)
         raise
 
 
@@ -160,6 +163,7 @@ def embed_texts(texts: List[str], user_id: Optional[int] = None,
     except Exception as e:
         duration = (time.time() - start) * 1000
         _record_usage('embedding', cfg['model'], 0, 0, 0, duration, 'failed', str(e), user_id, app_id)
+        logger.error("Embedding 调用失败: model=%s, error=%s", cfg['model'], e, exc_info=True)
         raise
 
 

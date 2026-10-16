@@ -182,6 +182,7 @@ def _execute_tool(agent: Agent, tool_name: str, action_input: str,
         except Agent.DoesNotExist:
             return tool['display_name'], '子智能体不存在或未启用', []
         except Exception as e:
+            logger.warning("子智能体调用失败: tool=%s, error=%s", tool.get('display_name'), e, exc_info=True)
             return tool['display_name'], f'子智能体调用失败: {str(e)}', []
 
     # MCP 工具
@@ -197,6 +198,7 @@ def _execute_tool(agent: Agent, tool_name: str, action_input: str,
             result = call_mcp_tool(tool['server_id'], tool['mcp_tool_name'], arguments)
             return tool['display_name'], result, []
         except Exception as e:
+            logger.warning("MCP 工具调用失败: tool=%s, error=%s", tool.get('display_name'), e, exc_info=True)
             return tool['display_name'], f'MCP 工具调用失败: {str(e)}', []
 
     if tool.get('builtin') and tool_name == 'search_knowledge':
@@ -270,6 +272,7 @@ def _execute_tool(agent: Agent, tool_name: str, action_input: str,
             result = resp.text
         return tool['display_name'], result[:2000], []
     except Exception as e:
+        logger.warning("工具调用失败: tool=%s, error=%s", tool.get('display_name', tool_name), e, exc_info=True)
         return tool.get('display_name', tool_name), f'工具调用失败：{str(e)}', []
 
 

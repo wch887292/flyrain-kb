@@ -108,7 +108,20 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
             avg_duration=Avg('duration_ms'),
         )
 
-        # 估算成本：按模型单价计算
+        # 按模型统计（同时用于成本计算，避免遍历所有记录）
+        by_model_qs = (
+            qs.values('model_name', 'model_type')
+            .annotate(
+                calls=Count('id'),
+                total_tokens=Sum('total_tokens'),
+                prompt_tokens=Sum('prompt_tokens'),
+                completion_tokens=Sum('completion_tokens'),
+            )
+            .order_by('-total_tokens')
+        )
+        by_model_all = list(by_model_qs)
+
+        # 估算成本：按模型单价计算（只需遍历按模型分组的结果）
         total_cost = 0.0
         by_model_cost = {}
         providers = ModelProvider.objects.all()
@@ -116,13 +129,13 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
             providers = providers.filter(tenant=tenant)
         provider_map = {p.model_name: p for p in providers}
 
-        for usage in qs:
-            p = provider_map.get(usage.model_name)
+        for m in by_model_all:
+            p = provider_map.get(m['model_name'])
             if p and p.price_input_per_1m and p.price_output_per_1m:
-                cost = (usage.prompt_tokens / 1_000_000 * p.price_input_per_1m +
-                        usage.completion_tokens / 1_000_000 * p.price_output_per_1m)
+                cost = (m['prompt_tokens'] / 1_000_000 * p.price_input_per_1m +
+                        m['completion_tokens'] / 1_000_000 * p.price_output_per_1m)
                 total_cost += cost
-                by_model_cost[usage.model_name] = by_model_cost.get(usage.model_name, 0) + cost
+                by_model_cost[m['model_name']] = cost
 
         # 按天统计
         daily = list(
@@ -137,17 +150,8 @@ class ModelProviderViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
             .order_by('day')
         )
 
-        # 按模型统计
-        by_model = list(
-            qs.values('model_name', 'model_type')
-            .annotate(
-                calls=Count('id'),
-                total_tokens=Sum('total_tokens'),
-                prompt_tokens=Sum('prompt_tokens'),
-                completion_tokens=Sum('completion_tokens'),
-            )
-            .order_by('-total_tokens')[:10]
-        )
+        # 按模型统计（取前10）
+        by_model = by_model_all[:10]
         for m in by_model:
             m['estimated_cost'] = round(by_model_cost.get(m['model_name'], 0), 6)
 

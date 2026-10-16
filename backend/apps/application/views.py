@@ -62,6 +62,7 @@ class PluginViewSet(RoleRequiredMixin, viewsets.ModelViewSet):
             result = _execute_plugin(plugin, input_text, {})
             return ok({'result': result[:500]}, message='测试成功')
         except Exception as e:
+            logger.warning("插件测试失败: plugin=%s, error=%s", plugin.name, e, exc_info=True)
             return fail(f'测试失败: {str(e)}', code=400)
 
 
