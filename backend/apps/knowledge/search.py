@@ -59,14 +59,21 @@ def keyword_search(kb: KnowledgeBase, query: str, top_k: int = 5) -> List[Dict[s
 
 def hybrid_search(kb: KnowledgeBase, query: str, top_k: int = 5,
                   vector_weight: float = 0.7) -> List[Dict[str, Any]]:
-    """混合检索：向量(默认0.7权重) + 关键词(0.3)。返回归一化融合分数。"""
-    # 向量检索
-    try:
-        q_vec = embed_texts([query])[0]
-        v_results = vector_search(kb, q_vec, top_k=top_k * 2)
-    except Exception as e:
-        logger.warning("混合检索-向量检索失败，回退纯关键词检索: kb=%s, error=%s", kb.id, e)
-        v_results = []
+    """混合检索：向量(默认0.7权重) + 关键词(0.3)。返回归一化融合分数。
+    当无可用 Embedding 模型时，自动回退纯关键词检索。"""
+    from apps.model_provider.models import ModelProvider
+    has_embedding = ModelProvider.objects.filter(type='embedding', is_default=True).exists()
+
+    # 向量检索（仅当存在可用 Embedding 模型时）
+    v_results = []
+    if has_embedding and vector_weight > 0:
+        try:
+            q_vec = embed_texts([query])[0]
+            v_results = vector_search(kb, q_vec, top_k=top_k * 2)
+        except Exception as e:
+            logger.warning("混合检索-向量检索失败，回退纯关键词检索: kb=%s, error=%s", kb.id, e)
+    elif not has_embedding:
+        logger.info("无可用 Embedding 模型，使用纯关键词检索: kb=%s", kb.id)
     try:
         k_results = keyword_search(kb, query, top_k=top_k * 2)
     except Exception as e:

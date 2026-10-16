@@ -2,6 +2,8 @@ from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from apps.users.models import ApiKey
+
 User = get_user_model()
 
 
@@ -89,3 +91,14 @@ class AdminUserWriteSerializer(serializers.ModelSerializer):
             instance.set_password(password)
         instance.save()
         return instance
+
+
+class ApiKeySerializer(serializers.ModelSerializer):
+    """API Key 序列化器：key 字段仅创建时返回，后续只显示前缀。"""
+    key = serializers.CharField(read_only=True)
+
+    class Meta:
+        model = ApiKey
+        fields = ('id', 'name', 'key', 'key_prefix', 'status', 'call_count',
+                  'last_used_at', 'expires_at', 'create_time')
+        read_only_fields = ('id', 'key', 'key_prefix', 'call_count', 'last_used_at', 'create_time')

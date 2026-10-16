@@ -8,7 +8,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from apps.common.rbac import RoleRequiredMixin, ROLE_ADMIN
 from apps.common.utils import get_request_tenant, ok, fail
 from apps.users.serializers import (
-    LoginSerializer, RegisterSerializer, UserSerializer, AdminUserWriteSerializer
+    LoginSerializer, RegisterSerializer, UserSerializer, AdminUserWriteSerializer,
+    ApiKeySerializer
 )
 from apps.users.models import User, ApiKey
 
@@ -86,6 +87,7 @@ class ApiKeyViewSet(viewsets.ModelViewSet):
     """API Key 管理：用户可创建、查看、删除自己的 API Key。"""
     permission_classes = [IsAuthenticated]
     pagination_class = None
+    serializer_class = ApiKeySerializer
 
     def get_queryset(self):
         return ApiKey.objects.filter(user=self.request.user).order_by('-create_time')
